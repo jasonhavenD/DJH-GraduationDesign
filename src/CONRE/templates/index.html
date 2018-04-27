@@ -1,0 +1,355 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>中文实开放式体关系抽取在线平台</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon"/>
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/echarts/4.0.4/echarts.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <a href="https://github.com/jasonhavend">
+        <img style="position: absolute; top: 0; right: 0; border: 0;"
+             src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
+             alt="Fork me on GitHub"
+             data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png">
+    </a>
+    <div class="row clearfix">
+        <br/>
+        <div class="col-md-12 column">
+            <ul class="nav nav-pills">
+                <li class="active">
+                    <a href="javascript:void(0)">首页</a>
+                </li>
+                <li>&nbsp;</li>
+                <li>
+                    <a href="https://github.com/jasonhavenD/DJH-GraduationDesign" target="_blank">更多</a>
+                </li>
+            </ul>
+            <br/>
+            <div class="jumbotron">
+                <h3>
+                    中文实开放式体关系抽取在线平台
+                </h3>
+                <h3>
+                    Chinese open entity relation extraction Online platform (CONRE)
+                </h3>
+                <p>
+                    This is an openning, sharing, online visualization system for Chinese entity relation extraction.
+                </p>
+                <p>
+                    <a class="btn btn-primary btn-large" href="https://github.com/jasonhavenD/DJH-GraduationDesign"
+                       target="_blank">Learn more</a>
+                </p>
+            </div>
+            <!--输入文本表单-->
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <a href='/CONRE/triples' target="_blank" class="btn btn-primary btn-large">Show Triples Of
+                        Database</a>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <div class="col-sm-10">
+                <h4>
+                    <strong>输入文本:</strong>
+                </h4>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                        <textarea class="form-control" rows="3" cols="50" id="text" name="text"
+                                  placeholder="请输入中文句子或者文本段落"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <a href="javascript:show_examples();">view examples</a>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="form-group" id="examples">
+            </div>
+            <div class="form-group" id="warning">
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <button id="extract" class="btn btn-primary btn-large">Extract</button>
+                </div>
+            </div>
+            <!--结果-->
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <h4>
+                        <strong>分句:</strong>
+                    </h4>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <textarea class="form-control" rows="3" cols="50" id="sentence"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <h4>
+                        <strong>分词:</strong>
+                    </h4>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <textarea class="form-control" rows="3" cols="50" id="segment"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <h4>
+                        <strong>词性标注:</strong>
+                    </h4>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <textarea class="form-control" rows="3" cols="50" id="postag"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <h4>
+                        <strong>实体及关系:</strong>
+                    </h4>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+                    <div id="neo4j" style="height: 600px;"></div>
+                </div>
+            </div>
+        </div>
+        <a href="#" class="top" title="回顶部">
+            <img style="width:50px;height:50px;float:right "
+                 src="{{ url_for('static', filename='images/top.png') }}"/>
+        </a>
+    </div>
+</div>
+<br/>
+<br/>
+<br/>
+<br/>
+<div class="row clearfix">
+    <div class="col-md-12 column" style="text-align:center">
+        ©2018- Jianghai Dai
+        <br/>
+        <strong>China Northwest A&F University</strong>
+        <span title="Phone">Phone:</abbr> 16619943994</span>
+        <br/>
+        <a href="http://www.bitbug.net/" target="_blank">
+            <img src="http://www.bitbug.net/mypagerank.php?style=1" border="0" alt="My Google PageRank"/>
+        </a>
+    </div>
+</div>
+</div>
+</body>
+</html>
+<script>
+    function show_warning() {
+        html = '<div class="col-sm-10"><div class="alert alert-dismissable alert-warning"><button type="button" class="close" data-dismiss="alert"aria-hidden="true">×</button><h4>Warning!</h4>输入内容为空，请重新输入</div></div>'
+        $('#warning').html(html)
+    }
+
+    function show_examples() {
+        var exmaples = []
+        exmaples.push('长安汽车副总裁李伟表示：“明年长安乘用车品牌将会布局4款新产品。”')
+        exmaples.push('凌轩在车身尺寸方面全面超越了宝骏730，更大的尺寸将带来更大的空间。')
+        exmaples.push('在巴黎恐怖袭击发生近两周后，德国联邦政府决定应法国总统奥朗德的请求采取行动。')
+        exmaples.push('“爵战珠海”的赛道爵战，创造“最小间距漂移入位”吉尼斯世界记录的韩岳、中国方程式大奖赛总冠军崔岳、WRC/CTCC冠军车手王睿、赛车界偶像级车手高华阳、中国首位汽车单边女车手华婷婷、漂移女王金蕊6位国内顶级车手下场竞技，3V3分组对垒、街头开黑，以风靡世界的金卡纳赛车、绝对刺激的400米直线加速、十分暴躁的漂移展开激情Battle。')
+        exmaples.push('由于空袭猛烈，“伊斯兰国”高层命令手下的武装人员撤离营地，躲入居民区，而且只能在小街小巷中移动，以避免被飞机发现，另外，他们下令，夜间禁止开汽车，拉卡原居民哈立德18日告诉美联社记者，10月下旬开始，“伊斯兰国”禁止当地居民逃难，而且最近强化了这一禁令，现在，居民人心惶惶，害怕被“伊斯兰国”用作“人体盾牌”，哈立德眼下居住在土耳其，不过仍与住在拉卡的亲戚朋友保持通信联系。')
+
+        content = ''
+        for (var e of exmaples) {
+            content += '<li><p>'
+            content += e
+            content += '</p></li>'
+        }
+        html = '<div class="col-sm-10"><div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button><h4>Examples</h4><ol>' + content + '</ol></div></div>'
+        $('#examples').html(html)
+    }
+
+    function hidde_warning() {
+        $('#warning').html('')
+    }
+
+    function strToJson(str) {
+        var json = eval('(' + str + ')');
+        return json;
+    }
+
+    $(document).ready(function () {
+        $('#text').val('')
+        $('#sentence').val('')
+        $('#segment').val('')
+        $('#postag').val('')
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('neo4j'));
+        $("#extract").click(function (event) {
+            var text = $('#text').val()
+            if (text.trim() == '') {
+                show_warning()
+                return
+            }
+            myChart.showLoading();
+            $.ajax({
+                url: 'http://127.0.0.1:5000/CONRE/extract',
+                type: 'POST',
+                data: {'text': text},
+                dataType: 'json',
+                success: function (result) {
+                    entities = result['entities']
+                    triples = result['triples']
+                    sentences = strToJson(result['sentences'])['sents']
+                    segmentses = strToJson(result['segmentses'])
+                    postagses = strToJson(result['postagses'])
+                    update_sents('#sentence', sentences)
+                    update_sents('#segment', segmentses)
+                    update_sents('#postag', postagses)
+                    update_grpha(myChart, entities, triples)
+                },
+                error: function (result) {
+                    alert('something error!')
+                }
+            })
+        });
+
+        $('#text').focus(function () {
+            hidde_warning()
+        });
+    });
+
+    function update_sents(id, sents) {
+        content = ""
+        if (id == '#sentence') {
+            for (var s of sents) {
+                content += s
+                content += '\n'
+            }
+        } else {
+            for (var sent of sents) {
+                tokens = sent['sent']
+                content += tokens
+                content += '\n'
+            }
+        }
+        $(id).val(content)
+    }
+
+    function update_grpha(myChart, entities, triples) {
+        // 指定图表的配置项和数据
+        var option = {}
+        option['title'] = {//图标信息
+            text: '',
+            link: 'http://172.19.12.30:7474/browser/'
+        }
+        option['tooltip'] = {},//提示框组件
+            option['animationDurationUpdate'] = 1000//数据更新动画的时长
+        option['animationEasingUpdate'] = 'quinticInOut',//数据更新动画的缓动效果
+            option['label'] = {normal: {show: true, textStyle: {fontSize: 12},}}
+        option['legend'] = {
+            x: "center",
+            show: true,
+            data: []
+        }
+        var series = {
+            type: 'graph',
+            layout: 'force',
+            symbolSize: 35,
+            focusNodeAdjacency: true,
+            roam: true,
+            label: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                }
+            },
+            //力量
+            force: {
+                repulsion: 800
+            },
+            edgeSymbolSize: [4, 50],
+            edgeLabel: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        fontSize: 12//边字体
+                    },
+                    formatter: "{c}"
+                }
+            },
+            //边属性
+            lineStyle: {
+                normal: {
+                    opacity: 0.9,
+                    width: 2.5,
+                    curveness: 0.3
+                }
+            }
+        }
+
+        //categories
+        var categories = []
+        //data
+        var data = []
+        //关系
+        var links = []
+
+        for (var e of entities) {
+            categories.push({name: e})
+        }
+        for (var name of entities) {
+            node = {
+                name: name,
+                category: entities.indexOf(name),
+                draggable: true,
+            }
+            data.push(node)
+            option['legend']['data'].push(name)
+        }
+        for (var tpl of triples) {
+            e1 = tpl['e1']
+            rel = tpl['rel']
+            e2 = tpl['e2']
+            edge = {
+                source: e1,
+                target: e2,
+                value: rel
+            }
+            links.push(edge)
+        }
+        series['categories'] = categories
+        series['data'] = data
+        series['links'] = links
+        option['series'] = series
+        myChart.hideLoading();
+        // 使用刚指定的配置项和数据显示图表
+        myChart.setOption(option);
+    }
+
+</script>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>图数据库三元组</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon"/>
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/echarts/4.0.4/echarts.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <a href="https://github.com/jasonhavend">
+        <img style="position: absolute; top: 0; right: 0; border: 0;"
+             src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
+             alt="Fork me on GitHub"
+             data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png">
+    </a>
+    <div class="row clearfix">
+        <br/>
+        <div class="col-md-12 column">
+            <ul class="nav nav-pills">
+                <li class="active">
+                    <a href="index.html">首页</a>
+                </li>
+                <li>&nbsp;</li>
+                <li>
+                    <a href="https://github.com/jasonhavenD/DJH-GraduationDesign" target="_blank">更多</a>
+                </li>
+            </ul>
+            <br/>
+            <div class="jumbotron">
+                <h3>
+                    图数据库中的三元组
+                </h3>
+                <p>
+                    data : crawl from web
+                    <br/> store : neo4j
+                    <br/> display : echarts
+                    <br/>
+                </p>
+            </div>
+            <!--query-->
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <input class="form-control" style="width: 300px;display: inline" id="input_node"
+                           placeholder="输入'实体词'查询"></input>
+                    <button id='node' class="btn btn-primary btn-large">查询</button>
+                    <br/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <input class="form-control" style="width: 300px;display: inline" id="input_relation"
+                           placeholder="输入'关系词'查询"></input>
+                    <button id='relation' class="btn btn-primary btn-large">查询</button>
+                </div>
+            </div>
+            <br/>
+            <!--结果-->
+            <div class="form-group">
+                <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+                <div id="neo4j" style="height: 1000px;">
+                </div>
+            </div>
+        </div>
+        <a href="#" class="top" title="回顶部">
+            <img style="width:50px;height:50px;float:right "
+                 src="{{ url_for('static', filename='images/top.png') }}"/>
+        </a>
+    </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="row clearfix">
+        <div class="col-md-12 column" style="text-align:center">
+            ©2018- Jianghai Dai
+            <br/>
+            <strong>China Northwest A&F University</strong>
+            <span title="Phone">Phone:</abbr> 16619943994</span>
+            <br/>
+            <a href="http://www.bitbug.net/" target="_blank">
+                <img src="http://www.bitbug.net/mypagerank.php?style=1" border="0" alt="My Google PageRank"/>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        var myChart = echarts.init(document.getElementById('neo4j'));
+        myChart.showLoading();
+        var result = {{result | tojson}}
+        entities = result['entities']
+        triples = result['triples']
+        update_grpha(myChart, entities, triples)
+
+        $("#node").click(function (event) {
+            var name = $('#input_node').val()
+            if (name.trim() == '') {
+                alert('输入不能为空')
+                return
+            }
+            $.ajax({
+                url: 'http://127.0.0.1:5000/CONRE/query_by_node',
+                type: 'POST',
+                data: {'name': name},
+                dataType: 'json',
+                success: function (result) {
+                    entities = result['entities']
+                    triples = result['triples']
+                    update_grpha(myChart, entities, triples)
+                    $('#input_node').val('')
+                },
+                error: function (result) {
+                    alert('something error!')
+                }
+            })
+        });
+        $("#relation").click(function (event) {
+            var relation = $('#input_relation').val()
+            if (relation.trim() == '') {
+                alert('输入不能为空')
+                return
+            }
+            $.ajax({
+                url: 'http://127.0.0.1:5000/CONRE/query_by_relation',
+                type: 'POST',
+                data: {'relation': relation},
+                dataType: 'json',
+                success: function (result) {
+                    entities = result['entities']
+                    triples = result['triples']
+                    update_grpha(myChart, entities, triples)
+                    $('#input_relation').val('')
+                },
+                error: function (result) {
+                    alert('something error!')
+                }
+            })
+        });
+
+    });
+
+    function update_grpha(myChart, entities, triples) {
+        // 指定图表的配置项和数据
+        var option = {}
+        option['title'] = {//图标信息
+            text: '',
+            link: 'http://172.19.12.30:7474/browser/'
+        }
+        option['tooltip'] = {},//提示框组件
+            option['animationDurationUpdate'] = 1000//数据更新动画的时长
+        option['animationEasingUpdate'] = 'quinticInOut',//数据更新动画的缓动效果
+            option['label'] = {normal: {show: true, textStyle: {fontSize: 12},}}
+        option['legend'] = {
+            x: "center",
+            show: true,
+            data: []
+        }
+        var series = {
+            type: 'graph',
+            layout: 'force',
+            symbolSize: 35,
+            focusNodeAdjacency: true,
+            roam: true,
+            label: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                }
+            },
+            //力量
+            force: {
+                repulsion: 800
+            },
+            edgeSymbolSize: [4, 50],
+            edgeLabel: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        fontSize: 12//边字体
+                    },
+                    formatter: "{c}"
+                }
+            },
+            //边属性
+            lineStyle: {
+                normal: {
+                    opacity: 0.9,
+                    width: 2.5,
+                    curveness: 0.3
+                }
+            }
+        }
+
+        //categories
+        var categories = []
+        //data
+        var data = []
+        //关系
+        var links = []
+
+        for (var e of entities) {
+            categories.push({name: e})
+        }
+        for (var name of entities) {
+            node = {
+                name: name,
+                category: entities.indexOf(name),
+                draggable: true,
+            }
+            data.push(node)
+            option['legend']['data'].push(name)
+        }
+        for (var tpl of triples) {
+            e1 = tpl['e1']
+            rel = tpl['rel']
+            e2 = tpl['e2']
+            edge = {
+                source: e1,
+                target: e2,
+                value: rel
+            }
+            links.push(edge)
+        }
+        series['categories'] = categories
+        series['data'] = data
+        series['links'] = links
+        option['series'] = series
+        myChart.hideLoading();
+        // 使用刚指定的配置项和数据显示图表
+        myChart.setOption(option);
+    }
+</script>
