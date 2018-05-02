@@ -20,6 +20,7 @@ from pyltp import Segmentor
 
 LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')  # 分词模型路径，模型名称为`cws.model`
+input_lexicon = '../../data/lexicon/entities.txt'
 
 logger = Logger().get_logger()
 
@@ -28,9 +29,8 @@ if __name__ == '__main__':
 	output = '../../data/preprocess/segments.txt'
 	logger.info("loading model......")
 	segmentor = Segmentor()  # 初始化实例
-	segmentor.load(cws_model_path)  # 加载模型
-	# use personal dict
-	# segmentor.load_with_lexicon(cws_model_path, lexicon_path)  # 加载模型，第二个参数是您的外部词典文件路径
+	# segmentor.load(cws_model_path)  # 加载模型
+	segmentor.load_with_lexicon(cws_model_path, input_lexicon)  # 加载模型，第二个参数是您的外部词典文件路径
 	logger.info("model has been loaded......")
 	sents = IOHelper.read_lines(input)
 	segments = []

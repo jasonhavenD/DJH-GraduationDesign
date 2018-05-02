@@ -222,6 +222,7 @@ def is_named_e(e, ne_list, sentence):
 import LTP_MODEL
 
 if __name__ == "__main__":
+	input_lexicon = '../../data/lexicon/entities.txt'
 	input_sentences = "../../data/preprocess/sentences.txt"
 	input_segments = "../../data/preprocess/segments.txt"
 	input_postags = "../../data/preprocess/postags.txt"
@@ -232,7 +233,8 @@ if __name__ == "__main__":
 
 	logger.info("loading models......")
 	segmentor = Segmentor()
-	segmentor.load(cws_model_path)
+	# segmentor.load(cws_model_path)
+	segmentor.load_with_lexicon(cws_model_path, input_lexicon)  # 加载模型，第二个参数是您的外部词典文件路径
 	logger.info("{} has been loaded......".format('cws.model'))
 
 	postagger = Postagger()

@@ -15,7 +15,7 @@ from pyltp import *
 import ne_re
 
 sys.path.append('../util/')
-
+input_lexicon = '../../data/lexicon/entities.txt'
 LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')
 pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')
@@ -23,7 +23,8 @@ par_model_path = os.path.join(LTP_DATA_DIR, 'parser.model')
 ner_model_path = os.path.join(LTP_DATA_DIR, 'ner.model')
 print("loading models......")
 segmentor = Segmentor()
-segmentor.load(cws_model_path)
+# segmentor.load(cws_model_path)
+segmentor.load_with_lexicon(cws_model_path, input_lexicon)  # 加载模型，第二个参数是您的外部词典文件路径
 print("{} has been loaded......".format('cws.model'))
 
 postagger = Postagger()
