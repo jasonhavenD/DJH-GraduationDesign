@@ -29,7 +29,8 @@ if __name__ == '__main__':
 	input_triples = "../../data/extraction/triples.txt"
 
 	client = MongoClient()
-	client = MongoClient('172.19.12.30', 27017)
+	# client = MongoClient('172.19.12.30', 27017)
+	client = MongoClient('127.0.0.1', 27017)
 	db = client.relation_extraction  # 连接数据库，没有则自动创建
 	ne_triples = db.ne_triples  # 使用集合，没有则自动创建
 	triples = db.triples  # 使用集合，没有则自动创建
@@ -46,9 +47,10 @@ if __name__ == '__main__':
 		for sent in ne_triples_sents:
 			if sent.strip() == '':
 				continue
-			type, triple = sent.strip().split('\t')
+			sent,type, triple = sent.strip().split('\t')
 			triple = clean_triple(triple)
 			doc = {}
+			doc['sent']=sent.strip()
 			doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
 			ne_triples.insert(doc)
 			logger.info('insert {} ne_triples'.format(count))
@@ -57,9 +59,10 @@ if __name__ == '__main__':
 		for sent in triples_sents:
 			if sent.strip() == '':
 				continue
-			type, triple = sent.strip().split('\t')
+			sent, type, triple = sent.strip().split('\t')
 			triple = clean_triple(triple)
 			doc = {}
+			doc['sent'] = sent.strip()
 			doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
 			triples.insert(doc)
 			logger.info('insert {} triples'.format(count))
