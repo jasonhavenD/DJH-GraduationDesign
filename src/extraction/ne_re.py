@@ -15,36 +15,38 @@ import os
 sys.path.append('../util/')
 from util.io import IOHelper
 from util.log import Logger
-from pyltp import Parser,Segmentor, Postagger
+from pyltp import Parser, Segmentor, Postagger
 
 logger = Logger().get_logger()
 
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')
 pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')
 par_model_path = os.path.join(LTP_DATA_DIR, 'parser.model')
 
 
-
-def extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, start=0, end=100):
+def extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, size):
 	# change size
-	sentences = sentences[start:end + 1]
-	segments_sents = segments_sents[start:end + 1]
-	postags_sents = postags_sents[start:end + 1]
-	ners_sents = ners_sents[start:end + 1]
+	sentences = sentences[0:size]
+	segments_sents = segments_sents[0:size]
+	postags_sents = postags_sents[0:size]
+	ners_sents = ners_sents[0:size]
 
 	triples_sents = []
 	ne_triples_sents = []
-	for i in range(end - start):
+	for i in range(size):
 		sent = sentences[i]
-		segments = segments_sents[i]
-		postags = postags_sents[i]
-		ners = ners_sents[i]
+		segments = segments_sents[i].strip().split('\t')
+		postags = postags_sents[i].strip().split('\t')
+		ners = ners_sents[i].strip().split('\t')
+		logger.info('extracting {} sentent...'.format(i + 1))
+
 		try:
 			if sent.strip() == '' or len(sent) > 1000:
 				continue
-			triples, ne_triples = triple_extract(sent, segments, postags, ners)
-			print('?')
+
+			triples, ne_triples = triple_extract(sent.strip(), segments, postags, ners)
+
 			if triples == []:
 				continue
 			triples_sents.append(triples)
@@ -52,8 +54,7 @@ def extract(sentences, segments_sents, postags_sents, ners_sents, output_triples
 				continue
 			ne_triples_sents.append(ne_triples)
 		except Exception as e:
-			logger.debug('filter a sent......')
-			pass
+			logger.info('filter {} sent......'.format(i + 1))
 	IOHelper.write_triples(output_triples, triples_sents)
 	IOHelper.write_triples(output_ne_triples, ne_triples_sents)
 
@@ -86,23 +87,23 @@ def triple_extract(sentence, words, postags, netags):
 				e1 = complete_e(words, postags, child_dict_list, child_dict['SBV'][0])
 				r = words[index]
 				e2 = complete_e(words, postags, child_dict_list, child_dict['VOB'][0])
-				triples.append("主语谓语宾语关系\t({},{},{})".format(e1, r, e2))
+				triples.append("{}\t主语谓语宾语关系\t({},{},{})".format(sentence,e1, r, e2))
 				if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-					ne_triples.append("主语谓语宾语关系\t({},{},{})".format(e1, r, e2))
+					ne_triples.append("{}\t主语谓语宾语关系\t({},{},{})".format(sentence,e1, r, e2))
 			# 定语后置，动宾关系
 			if arcs[index].relation == 'ATT':
 				if child_dict.has_key('VOB'):
 					e1 = complete_e(words, postags, child_dict_list, arcs[index].head - 1)
 					r = words[index]
 					e2 = (words, postags, child_dict_list, child_dict['VOB'][0])
-					temp_string = r + e2
+					temp_string = r + str(e2)
 					if temp_string == e1[:len(temp_string)]:
 						e1 = e1[len(temp_string):]
 					if temp_string not in e1:
-						triples.append("定语后置动宾关系\t({},{},{})".format(e1, r, e2))
+						triples.append("{}\t定语后置动宾关系\t({},{},{})".format(sentence,e1, r, e2))
 					if temp_string not in e1 and is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list,
 					                                                                              sentence):
-						ne_triples.append("定语后置动宾关系\t({},{},{})".format(e1, r, e2))
+						ne_triples.append("{}\t定语后置动宾关系\t({},{},{})".format(sentence,e1, r, e2))
 			# 含有介宾关系的主谓动补关系
 			if child_dict.has_key('SBV') and child_dict.has_key('CMP'):
 				# e1 = words[child_dict['SBV'][0]]
@@ -111,9 +112,9 @@ def triple_extract(sentence, words, postags, netags):
 				r = words[index] + words[cmp_index]
 				if child_dict_list[cmp_index].has_key('POB'):
 					e2 = complete_e(words, postags, child_dict_list, child_dict_list[cmp_index]['POB'][0])
-					triples.append("介宾关系主谓动补\t({},{},{})".format(e1, r, e2))
+					triples.append("{}\t介宾关系主谓动补\t({},{},{})".format(sentence,e1, r, e2))
 					if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-						ne_triples.append("介宾关系主谓动补\t({},{},{})".format(e1, r, e2))
+						ne_triples.append("{}\t介宾关系主谓动补\t({},{},{})".format(sentence,e1, r, e2))
 
 		# 尝试抽取命名实体有关的三元组
 		if netags[index][0] == 'S' or netags[index][0] == 'B':
@@ -141,9 +142,9 @@ def triple_extract(sentence, words, postags, netags):
 					if r in e2:
 						e2 = e2[(e2.index(r) + len(r)):]
 					if r + e2 in sentence:
-						triples.append("机构//地名//人名\t({},{},{})".format(e1, r, e2))
+						triples.append("{}\t机构//地名//人名\t({},{},{})".format(sentence,e1, r, e2))
 					if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-						ne_triples.append("机构//地名//人名\t({},{},{})".format(e1, r, e2))
+						ne_triples.append("{}\t机构//地名//人名\t({},{},{})".format(sentence,e1, r, e2))
 	return triples, ne_triples
 
 
@@ -219,6 +220,7 @@ def is_named_e(e, ne_list, sentence):
 			return True
 	return False
 
+
 import LTP_MODEL
 
 if __name__ == "__main__":
@@ -250,6 +252,6 @@ if __name__ == "__main__":
 	postags_sents = IOHelper.read_lines(input_postags)
 	ners_sents = IOHelper.read_lines(input_ners)
 
-	extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, start=0, end=1000)
+	extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, 10000)
 
 	logger.info('finished!......')

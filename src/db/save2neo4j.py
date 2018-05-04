@@ -87,7 +87,8 @@ def query_by_relation(relation):
 
 if __name__ == '__main__':
 	begin = datetime.datetime.now()
-	graph = Graph('http://172.19.12.30:7474/db/data', username='neo4j', password='root')
+	# graph = Graph('http://172.19.12.30:7474/db/data', username='neo4j', password='root')
+	graph = Graph('127.0.0.1:7474/db/data', username='neo4j', password='root')
 	client = MongoClient()
 	# client = MongoClient('172.19.12.30', 27017)
 	client = MongoClient('127.0.0.1', 27017)

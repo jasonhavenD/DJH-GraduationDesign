@@ -10,6 +10,7 @@
 -------------------------------------------------
 """
 import sys
+import codecs
 import json
 from hanziconv import HanziConv
 
@@ -191,11 +192,17 @@ def query_by_relation():
 
 def insert_triples(triples):
 	'''
-	triple={'e1':value,'e2':value,'rel':value}
+	triple={'e1':value,'e2':value,'rel':value,'sent':value}
 	'''
+	# 更新实体字典
+	flexicon = codecs.open(lexicon, 'a', encoding='utf-8')
 	for triple in triples:
 		e1 = triple['e1'].strip()
 		e2 = triple['e2'].strip()
+		flexicon.write(e1.strip())
+		flexicon.write('\n')
+		flexicon.write(e1.strip())
+		flexicon.write('\n')
 		if len(e1) < 2 or len(e2) < 2:
 			continue
 		rel = triple['rel'].strip()
@@ -218,6 +225,7 @@ def insert_triples(triples):
 		relation_node = Relationship(e1_node, rel, e2_node)
 		all = e1_node | e2_node | relation_node
 		graph.create(all)
+	flexicon.close()
 
 
 if __name__ == '__main__':
@@ -227,7 +235,11 @@ if __name__ == '__main__':
 	client = MongoClient('127.0.0.1', 27017)
 	db = client.relation_extraction  # 连接数据库
 	db_ne_triples = db.ne_triples  # 使用集合
-	# 链接neo4j
-	graph = Graph('http://172.19.12.30:7474/db/data', username='neo4j', password='root')
 
+	# 链接neo4j
+	# graph = Graph('http://172.19.12.30:7474/db/data', username='neo4j', password='root')
+	graph = Graph('127.0.0.1:7474/db/data', username='neo4j', password='root')
+
+	#实体字典
+	lexicon = '../../data/lexicon/entities.txt'
 	app.run(threaded=True)
