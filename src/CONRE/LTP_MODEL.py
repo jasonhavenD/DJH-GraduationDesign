@@ -16,7 +16,7 @@ import ne_re
 
 sys.path.append('../util/')
 input_lexicon = '../../data/lexicon/entities.txt'
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')
 pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')
 par_model_path = os.path.join(LTP_DATA_DIR, 'parser.model')
