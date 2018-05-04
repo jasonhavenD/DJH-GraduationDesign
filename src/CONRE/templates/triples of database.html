@@ -170,6 +170,8 @@
     }
 
     function query_by_node() {
+        /*清空句子*/
+        $('#sentences').html('')
         var name = $('#input_node').val()
         if (name.trim() == '') {
             alert('输入不能为空')
@@ -196,7 +198,8 @@
     }
 
     function query_by_relation() {
-
+        /*清空句子*/
+        $('#sentences').html('')
         var relation = $('#input_relation').val()
         if (relation.trim() == '') {
             alert('输入不能为空')
