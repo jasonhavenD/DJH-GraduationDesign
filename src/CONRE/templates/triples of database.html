@@ -44,18 +44,36 @@
                     <br/>
                 </p>
             </div>
+             <div class="form-group">
+                <div class="col-sm-10">
+                    <button id='all' class="btn btn-primary btn-large">显示全部</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-10">
+                    &nbsp;
+                </div>
+            </div>
             <!--query-->
             <div class="form-group">
                 <div class="col-sm-10">
-                    <input class="form-control" style="width: 300px;display: inline" id="input_node"
+                    <input id="input_node" class="form-control" style="width: 300px;display: inline" id="input_node"
                            placeholder="输入'实体词'查询"></input>
                     <button id='node' class="btn btn-primary btn-large">查询</button>
                     <br/>
                 </div>
             </div>
+
             <div class="form-group">
                 <div class="col-sm-10">
-                    <input class="form-control" style="width: 300px;display: inline" id="input_relation"
+                    &nbsp;
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <input id="input_relation" class="form-control" style="width: 300px;display: inline"
+                           id="input_relation"
                            placeholder="输入'关系词'查询"></input>
                     <button id='relation' class="btn btn-primary btn-large">查询</button>
                 </div>
@@ -65,18 +83,39 @@
                     &nbsp;
                 </div>
             </div>
-            <!--结果-->
+
             <div class="form-group">
-                <div class="col-sm-10" style="width: 1140px;" >
-                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
-                    <div id="neo4j" style="height: 1200px;"></div>
+                <div class="col-sm-10">
+                    &nbsp;
                 </div>
             </div>
+            <!--结果-->
+            <div class="form-group">
+                <div class="col-sm-10" style="width: 1120px;">
+                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+                    <div id="neo4j" style="height: 1000px;"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-10">
+                    &nbsp;
+                </div>
+            </div>
+            <!--实体所在句子-->
+            <div class="form-group" id="sentences">
+                <!--实体所在句子-->
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    &nbsp;
+                </div>
+            </div>
+            <a href="#" class="top" title="回顶部">
+                <img style="width:50px;height:50px;float:right "
+                     src="{{ url_for('static', filename='images/top.png') }}"/>
+            </a>
         </div>
-        <a href="#" class="top" title="回顶部">
-            <img style="width:50px;height:50px;float:right "
-                 src="{{ url_for('static', filename='images/top.png') }}"/>
-        </a>
     </div>
     <br/>
     <br/>
@@ -98,62 +137,133 @@
 </body>
 </html>
 <script>
+    function show_sentences(sents) {
+        content = ''
+        for (var e of sents) {
+            content += '<li><p>'
+            content += e
+            content += '</p></li>'
+        }
+        html = '<div class="col-sm-10"><div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button><h4>Sentences</h4><ol>' + content + '</ol></div></div>'
+        $('#sentences').html(html)
+    }
+
+    function query_all() {
+        /*清空句子*/
+        $('#sentences').html('')
+        $('#input_relation').val('')
+        $('#input_node').val('')
+        $.ajax({
+            url: 'http://127.0.0.1:5000/CONRE/query_all',
+            type: 'POST',
+            dataType: 'json',
+            success: function (result) {
+                entities = result['entities'];
+                triples = result['triples'];
+                update_grpha(entities, triples);
+                $('#input_node').val('')
+            },
+            error: function (result) {
+                alert('something error!')
+            }
+        })
+    }
+
+    function query_by_node() {
+        var name = $('#input_node').val()
+        if (name.trim() == '') {
+            alert('输入不能为空')
+            return
+        }
+        $.ajax({
+            url: 'http://127.0.0.1:5000/CONRE/query_by_node',
+            type: 'POST',
+            data: {'name': name},
+            dataType: 'json',
+            success: function (result) {
+                entities = result['entities'];
+                triples = result['triples'];
+                sents = result['sents'];
+                update_grpha(entities, triples);
+                /*显示句子*/
+                show_sentences(sents);
+                $('#input_node').val('')
+            },
+            error: function (result) {
+                alert('something error!')
+            }
+        })
+    }
+
+    function query_by_relation() {
+
+        var relation = $('#input_relation').val()
+        if (relation.trim() == '') {
+            alert('输入不能为空')
+            return
+        }
+        $.ajax({
+            url: 'http://127.0.0.1:5000/CONRE/query_by_relation',
+            type: 'POST',
+            data: {'relation': relation},
+            dataType: 'json',
+            success: function (result) {
+                entities = result['entities']
+                triples = result['triples']
+                sents = result['sents']
+                update_grpha(entities, triples);
+                /*显示句子*/
+                show_sentences(sents);
+                $('#input_relation').val('')
+            },
+            error: function (result) {
+                alert('something error!')
+            }
+        })
+    }
+
     $(document).ready(function () {
         var myChart = echarts.init(document.getElementById('neo4j'));
         myChart.showLoading();
         var result = {{result | tojson}}
-        entities = result['entities']
+            entities = result['entities']
         triples = result['triples']
-        update_grpha(myChart, entities, triples)
 
+        /*显示数据库全部*/
+        update_grpha(entities, triples);
+
+        /*绑定事件*/
         $("#node").click(function (event) {
-            var name = $('#input_node').val()
-            if (name.trim() == '') {
-                alert('输入不能为空')
-                return
-            }
-            $.ajax({
-                url: 'http://127.0.0.1:5000/CONRE/query_by_node',
-                type: 'POST',
-                data: {'name': name},
-                dataType: 'json',
-                success: function (result) {
-                    entities = result['entities']
-                    triples = result['triples']
-                    update_grpha(myChart, entities, triples)
-                    $('#input_node').val('')
-                },
-                error: function (result) {
-                    alert('something error!')
-                }
-            })
+            query_by_node();
         });
+        /*绑定事件*/
         $("#relation").click(function (event) {
-            var relation = $('#input_relation').val()
-            if (relation.trim() == '') {
-                alert('输入不能为空')
-                return
+            query_by_relation();
+        });
+
+        /*绑定事件*/
+        $("#all").click(function (event) {
+            query_all();
+        });
+
+        /*绑定事件*/
+        $('#input_node').bind('keypress', function (event) {
+            if (event.keyCode == 13) {
+                query_by_node()
             }
-            $.ajax({
-                url: 'http://127.0.0.1:5000/CONRE/query_by_relation',
-                type: 'POST',
-                data: {'relation': relation},
-                dataType: 'json',
-                success: function (result) {
-                    entities = result['entities']
-                    triples = result['triples']
-                    update_grpha(myChart, entities, triples)
-                    $('#input_relation').val('')
-                },
-                error: function (result) {
-                    alert('something error!')
-                }
-            })
+        });
+        /*绑定事件*/
+        $('#input_relation').bind('keypress', function (event) {
+            if (event.keyCode == 13) {
+                query_by_relation()
+            }
         });
 
     });
 
-    function update_grpha(myChart, entities, triples) {
+    function update_grpha(entities, triples) {
+        var myChart = echarts.init(document.getElementById('neo4j'));
+        myChart.showLoading();
         // 指定图表的配置项和数据
         var option = {}
         option['title'] = {//图标信息
