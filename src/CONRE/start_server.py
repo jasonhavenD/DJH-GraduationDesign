@@ -17,6 +17,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 import LTP_MODEL
+from pymongo import MongoClient
 from py2neo import Graph, Node, Relationship
 from flask import Flask, request, render_template, jsonify
 
@@ -71,17 +72,26 @@ def extract():
 	result['triples'] = triples
 	return jsonify(result)
 
+
 def sentences2dict(sentences):
 	lst = []
 	for sent in sentences:
 		lst.append(sent)
 	return {'sents': lst}
 
+
 def type2dict(obj):
 	lst = []
 	for sent in obj:
-		lst.append(unicode(sent,errors='ignore'))
+		lst.append(unicode(sent, errors='ignore'))
 	return {'sent': ' '.join(lst)}
+
+
+@app.route('/CONRE/query_all', methods=['POST'])
+def query_all():
+	entities, triples = query_all_triples_of_database()
+	result = {'entities': entities, 'triples': triples}
+	return jsonify(result), 200
 
 
 def query_all_triples_of_database():
@@ -104,55 +114,78 @@ def query_all_triples_of_database():
 @app.route('/CONRE/query_by_node', methods=['POST'])
 def query_by_node():
 	name = request.form.get('name')
+	name = HanziConv.toSimplified(name).encode('utf-8')
 	entities = set()
 	triples = []
-	statement1 = "match (e1:Sub {name:'%s'})-[rel]-(e2) return e1,rel,e2" % name
-	statement2 = "match (e1)-[rel]-(e2:Obj {name:'%s'}) return e1,rel,e2" % name
+	sents = []
 
-	result1 = graph.run(statement1).data()
-	result2 = graph.run(statement2).data()
-	for rst in result1:
-		e1, rel, e2 = rst['e1'], rst['rel'], rst['e2']
-		# print(e1['name'], rel.type(), e2['name'])
-		dct = {}
-		dct['e1'] = e1['name']
-		dct['rel'] = rel.type()
-		dct['e2'] = e2['name']
-		entities.add(e1['name'])
-		entities.add(e2['name'])
-		triples.append(dct)
+	# 首先从mongodb模糊查询实体s
+	args = '.*%s.*' % (name)
+	e1_s = db_ne_triples.find({'e1': {'$regex': args}})
+	e2_s = db_ne_triples.find({'e2': {'$regex': args}})
 
-	for rst in result2:
-		e1, rel, e2 = rst['e1'], rst['rel'], rst['e2']
-		# print(e1['name'], rel.type(), e2['name'])
-		dct = {}
-		dct['e1'] = e1['name']
-		dct['rel'] = rel.type()
-		dct['e2'] = e2['name']
-		entities.add(e1['name'])
-		entities.add(e2['name'])
-		triples.append(dct)
+	for item in e1_s.clone():
+		sents.append(item['sent'])
+	for item in e2_s.clone():
+		sents.append(item['sent'])
 
-	result = {'entities': list(entities), 'triples': triples}
+	for name in e1_s.distinct('e1'):
+		statement1 = "match (e1:Sub {name:'%s'})-[rel]-(e2) return e1,rel,e2" % name
+		result1 = graph.run(statement1).data()
+		for rst in result1:
+			e1, rel, e2 = rst['e1'], rst['rel'], rst['e2']
+			dct = {}
+			dct['e1'] = e1['name']
+			dct['rel'] = rel.type()
+			dct['e2'] = e2['name']
+			entities.add(e1['name'])
+			entities.add(e2['name'])
+			triples.append(dct)
+	for name in e2_s.distinct('e2'):
+		statement2 = "match (e1)-[rel]-(e2:Obj {name:'%s'}) return e1,rel,e2" % name
+		result2 = graph.run(statement2).data()
+		for rst in result2:
+			e1, rel, e2 = rst['e1'], rst['rel'], rst['e2']
+			dct = {}
+			dct['e1'] = e1['name']
+			dct['rel'] = rel.type()
+			dct['e2'] = e2['name']
+			entities.add(e1['name'])
+			entities.add(e2['name'])
+			triples.append(dct)
+
+	result = {'entities': list(entities), 'triples': triples, 'sents': list(set(sents))}
 	return jsonify(result), 200
 
 
 @app.route('/CONRE/query_by_relation', methods=['POST'])
 def query_by_relation():
 	relation = request.form.get('relation')
+	relation = HanziConv.toSimplified(relation).encode('utf-8')
 	entities = set()
 	triples = []
-	results = graph.match(rel_type=relation)
-	for rst in results:
-		e1, e2 = rst.nodes()
-		dct = {}
-		dct['e1'] = e1['name']
-		dct['rel'] = relation
-		dct['e2'] = e2['name']
-		entities.add(e1['name'])
-		entities.add(e2['name'])
-		triples.append(dct)
-	result = {'entities': list(entities), 'triples': triples}
+	sents = []
+
+	# 首先从mongodb模糊查询实体s
+	args = '.*%s.*' % (relation)
+	rel_s = db_ne_triples.find({'rel': {'$regex': args}})
+
+	for item in rel_s.clone():
+		sents.append(item['sent'])
+
+	for relation in rel_s.distinct('rel'):
+		results = graph.match(rel_type=relation)
+		for rst in results:
+			e1, e2 = rst.nodes()
+			dct = {}
+			dct['e1'] = e1['name']
+			dct['rel'] = relation
+			dct['e2'] = e2['name']
+			entities.add(e1['name'])
+			entities.add(e2['name'])
+			triples.append(dct)
+
+	result = {'entities': list(entities), 'triples': triples, 'sents': list(set(sents))}
 	return jsonify(result), 200
 
 
@@ -166,6 +199,13 @@ def insert_triples(triples):
 		if len(e1) < 2 or len(e2) < 2:
 			continue
 		rel = triple['rel'].strip()
+		sent = triple['sent'].strip()
+		# insert to mongodb
+		doc = {}
+		doc['sent'] = sent
+		doc['e1'], doc['rel'], doc['e2'] = e1, rel, e2
+		db_ne_triples.insert(doc)
+		# insert to neo4j
 		e1_node = Node('Sub', name=e1)
 		e2_node = Node('Obj', name=e2)
 		# find first
@@ -181,5 +221,13 @@ def insert_triples(triples):
 
 
 if __name__ == '__main__':
+	# 链接mongodb
+	client = MongoClient()
+	# client = MongoClient('172.19.12.30', 27017)
+	client = MongoClient('127.0.0.1', 27017)
+	db = client.relation_extraction  # 连接数据库
+	db_ne_triples = db.ne_triples  # 使用集合
+	# 链接neo4j
 	graph = Graph('http://172.19.12.30:7474/db/data', username='neo4j', password='root')
+
 	app.run(threaded=True)
