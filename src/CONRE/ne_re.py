@@ -16,7 +16,7 @@ sys.path.append('../util/')
 from pyltp import Parser, Segmentor, Postagger
 
 
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')
 pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')
 par_model_path = os.path.join(LTP_DATA_DIR, 'parser.model')
@@ -75,7 +75,7 @@ def triple_extract(sentence, words, postags, netags):
 				r = words[index]
 				e2 = complete_e(words, postags, child_dict_list, child_dict['VOB'][0])
 				if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-					ne_triples.append({'e1': e1, 'rel': r, 'e2': e2})
+					ne_triples.append({'e1': e1, 'rel': r, 'e2': e2,'sent':sentence})
 			# 定语后置，动宾关系
 			if arcs[index].relation == 'ATT':
 				if child_dict.has_key('VOB'):
@@ -89,7 +89,7 @@ def triple_extract(sentence, words, postags, netags):
 						e1 = e1[len(temp_string):]
 					if temp_string not in e1 and is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list,
 					                                                                              sentence):
-						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2})
+						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2, 'sent': sentence})
 			# 含有介宾关系的主谓动补关系
 			if child_dict.has_key('SBV') and child_dict.has_key('CMP'):
 				# e1 = words[child_dict['SBV'][0]]
@@ -99,7 +99,7 @@ def triple_extract(sentence, words, postags, netags):
 				if child_dict_list[cmp_index].has_key('POB'):
 					e2 = complete_e(words, postags, child_dict_list, child_dict_list[cmp_index]['POB'][0])
 					if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2})
+						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2, 'sent': sentence})
 
 		# 尝试抽取命名实体有关的三元组
 		if netags[index][0] == 'S' or netags[index][0] == 'B':
@@ -127,7 +127,7 @@ def triple_extract(sentence, words, postags, netags):
 					if r in e2:
 						e2 = e2[(e2.index(r) + len(r)):]
 					if is_named_e(e1, NE_list, sentence) and is_named_e(e2, NE_list, sentence):
-						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2})
+						ne_triples.append({'e1': e1, 'rel': r, 'e2': e2, 'sent': sentence})
 	return ne_triples
 
 
