@@ -18,7 +18,8 @@ from util.io import IOHelper
 from util.log import Logger
 from pyltp import Postagger
 
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')
 
 logger = Logger().get_logger()

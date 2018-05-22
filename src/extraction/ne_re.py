@@ -13,6 +13,7 @@ import sys
 import os
 
 sys.path.append('../util/')
+import datetime
 from util.io import IOHelper
 from util.log import Logger
 from pyltp import Parser, Segmentor, Postagger
@@ -233,6 +234,8 @@ if __name__ == "__main__":
 	output_triples = "../../data/extraction/triples.txt"
 	output_ne_triples = "../../data/extraction/ne_triples.txt"
 
+	begin=datetime.datetime.now()
+
 	logger.info("loading models......")
 	segmentor = Segmentor()
 	# segmentor.load(cws_model_path)
@@ -252,6 +255,8 @@ if __name__ == "__main__":
 	postags_sents = IOHelper.read_lines(input_postags)
 	ners_sents = IOHelper.read_lines(input_ners)
 
-	extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, 10000)
+	size=100000
+	extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, size)
 
-	logger.info('finished!......')
+	end = datetime.datetime.now()
+	logger.info("finished in {}s for {} sentences.".format(end-begin,size))

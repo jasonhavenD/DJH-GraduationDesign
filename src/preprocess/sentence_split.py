@@ -21,7 +21,7 @@ from util.log import Logger
 logger = Logger().get_logger()
 
 if __name__ == '__main__':
-	input = '../../data/preprocess/chinaautonews.txt'
+	input = '../../data/preprocess/simple.txt'
 	output = '../../data/preprocess/sentences.txt'
 	text = IOHelper.read(input)
 	sents = pyltp.SentenceSplitter.split(text.strip())

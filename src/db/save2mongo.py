@@ -41,32 +41,45 @@ if __name__ == '__main__':
 	if ne_triples_sents == None or triples_sents == None:
 		logger.error('read failed!')
 		sys.exit(0)
+
+	logger.info("ne_tiples size = {}".format(len(ne_triples_sents)))
+	logger.info("tiples size = {}".format(len(triples_sents)))
+
 	begin = datetime.datetime.now()
 	try:
 		count = 1
 		for sent in ne_triples_sents:
 			if sent.strip() == '':
 				continue
-			sent,type, triple = sent.strip().split('\t')
-			triple = clean_triple(triple)
-			doc = {}
-			doc['sent']=sent.strip()
-			doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
-			ne_triples.insert(doc)
-			logger.info('insert {} ne_triples'.format(count))
-			count += 1
+			try:
+				sent, type, triple = sent.strip().split('\t')
+				triple = clean_triple(triple)
+				doc = {}
+				doc['sent'] = sent.strip()
+				doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
+				ne_triples.insert(doc)
+				logger.info('insert {} ne_triples'.format(count))
+				count += 1
+			except Exception as e:
+				logger.error(e)
+				continue
+
 		count = 1
-		for sent in triples_sents:
+		for sent in triples_sents[:10]:
 			if sent.strip() == '':
 				continue
-			sent, type, triple = sent.strip().split('\t')
-			triple = clean_triple(triple)
-			doc = {}
-			doc['sent'] = sent.strip()
-			doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
-			triples.insert(doc)
-			logger.info('insert {} triples'.format(count))
-			count += 1
+			try:
+				sent, type, triple = sent.strip().split('\t')
+				triple = clean_triple(triple)
+				doc = {}
+				doc['sent'] = sent.strip()
+				doc['e1'], doc['rel'], doc['e2'] = triple.strip().split(',')
+				triples.insert(doc)
+				logger.info('insert {} triples'.format(count))
+				count += 1
+			except Exception as e:
+				logger.error(e)
+				continue
 	except Exception as e:
 		logger.error(e)
 	ne_triples.ensure_index([("e1", 1)])

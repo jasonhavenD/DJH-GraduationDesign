@@ -18,7 +18,7 @@ from util.io import IOHelper
 from util.log import Logger
 from pyltp import NamedEntityRecognizer
 
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 ner_model_path = os.path.join(LTP_DATA_DIR, 'ner.model')  # 命名实体识别模型路径
 
 logger = Logger().get_logger()
@@ -37,8 +37,8 @@ if __name__ == '__main__':
 	postagses = IOHelper.read_lines(input_postags)
 
 	if len(wordses) != len(postagses):
-		wordses = wordses[:10000]
-		postagses = postagses[:10000]
+		wordses = wordses[:100000]#wc -l 查看文件总行数
+		postagses = postagses[:100000]
 	nerses = []
 	for words, postags in zip(wordses, postagses):
 		ners = recognizer.recognize(words.split('\t'), postags.split('\t'))

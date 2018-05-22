@@ -1,5 +1,11 @@
 undergraduate graduation design  for Chinese relation extraction
 
+---
+- env:
+python2.7
+
+---
+
 - data
 	- crawl
 		- chinaautonews.txt : original web text

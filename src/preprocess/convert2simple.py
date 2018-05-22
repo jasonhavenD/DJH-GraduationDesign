@@ -21,8 +21,8 @@ from util.log import Logger
 logger = Logger().get_logger()
 
 if __name__ == '__main__':
-	input_raw = '../../data/crawl/chinaautonews.txt'
-	output_raw = '../../data/preprocess/chinaautonews.txt'
+	input_raw = '../../data/raw/merged.txt'
+	output_raw = '../../data/preprocess/simple.txt'
 	text = IOHelper.read(input_raw)
 	text = HanziConv.toSimplified(text)
 	IOHelper.write(output_raw, text)

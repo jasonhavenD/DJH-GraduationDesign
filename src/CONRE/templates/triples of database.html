@@ -265,6 +265,11 @@
     });
 
     function update_grpha(entities, triples) {
+        var is_show_legend=false;
+        if(entities.length<=40){
+            is_show_legend=true;
+        }
+
         var myChart = echarts.init(document.getElementById('neo4j'));
         myChart.showLoading();
         // 指定图表的配置项和数据
@@ -279,7 +284,7 @@
             option['label'] = {normal: {show: true, textStyle: {fontSize: 12},}}
         option['legend'] = {
             x: "center",
-            show: true,
+            show: is_show_legend,//是否显示看数量
             data: []
         }
         var series = {

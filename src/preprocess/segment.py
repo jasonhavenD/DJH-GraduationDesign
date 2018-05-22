@@ -18,7 +18,7 @@ from util.io import IOHelper
 from util.log import Logger
 from pyltp import Segmentor
 
-LTP_DATA_DIR = "/home/jason/ltp_data"  # ltp模型目录的路径
+LTP_DATA_DIR = "/home/jasonhaven/ltp_data"  # ltp模型目录的路径
 cws_model_path = os.path.join(LTP_DATA_DIR, 'cws.model')  # 分词模型路径，模型名称为`cws.model`
 input_lexicon = '../../data/lexicon/entities.txt'
 
