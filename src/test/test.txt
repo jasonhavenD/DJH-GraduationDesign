@@ -1,0 +1,3 @@
+一汽	奥迪	是	西北	农林	科技	大学	的	一	名	学生	。
+O	O	O	B-Ni	I-Ni	I-Ni	E-Ni	O	O	O	O	O
+

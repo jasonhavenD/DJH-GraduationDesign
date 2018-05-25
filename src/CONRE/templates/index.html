@@ -202,7 +202,7 @@
     function show_examples() {
         var exmaples = []
         exmaples.push('在巴黎恐怖襲擊發生近兩周後，德國聯邦政府決定應法國總統奧朗德的請求采取行動。')
-        exmaples.push('在巴黎恐怖袭击发生近两周后，德国联邦政府决定应法国总统奥朗德的请求采取行动。')
+        exmaples.push('去年12月，福特汽车公司执行董事长比尔·福特和福特汽车公司总裁兼首席执行官韩恺特（Jim Hackett）一起来到中国，与中国南方工业集团公司董事长徐平一起签署了深化战略合作伙伴关系框架协议，进一步加深双方在产品创新、产品合作等领域的合作。')
         exmaples.push('《财富》全球论坛常务董事倪德慕（John Needham），广州市委宣传部副部长、2017广州《财富》全球论坛执行委员会办公室主任朱小燚，广州市交委办公室副主任、交委财富筹备办副主任吴旭波，广汽集团副总经理张青松，广汽乘用车副总经理闫建明等相关领导嘉宾莅临出席。')
         content = ''
         for (var e of exmaples) {
@@ -294,6 +294,10 @@
             option['label'] = {normal: {show: true, textStyle: {fontSize: 12},}}
         option['legend'] = {
             x: "center",
+            textStyle: {
+                fontWeight: 'bold',
+                fontSize: 20
+            },
             show: true,
             data: []
         }
