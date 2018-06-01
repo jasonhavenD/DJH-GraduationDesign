@@ -32,12 +32,18 @@ app = Flask(__name__)
 def index():
 	return render_template('index.html')
 
+@app.route('/CONRE/tags', methods=['GET'])
+def show_tags():
+	return render_template('tags.html')
+
+
 
 @app.route('/CONRE/triples', methods=['GET'])
 def show_triples_of_database():
 	entities, triples = query_all_triples_of_database()
 	result = {'entities': entities, 'triples': triples}
 	return render_template('triples of database.html', result=result)
+
 
 
 @app.route('/CONRE/extract', methods=['POST'])
@@ -66,6 +72,7 @@ def extract():
 			entities.add(e1)
 			entities.add(e2)
 			triples.append(triple)
+
 	result['sentences'] = json.dumps(sentences, default=sentences2dict)
 	result['segmentses'] = json.dumps(segments_sents, default=type2dict)
 	result['postagses'] = json.dumps(postags_sents, default=type2dict)
