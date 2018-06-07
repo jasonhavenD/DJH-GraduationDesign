@@ -255,7 +255,7 @@ if __name__ == "__main__":
 	postags_sents = IOHelper.read_lines(input_postags)
 	ners_sents = IOHelper.read_lines(input_ners)
 
-	size=100000
+	size=10000
 	extract(sentences, segments_sents, postags_sents, ners_sents, output_triples, output_ne_triples, size)
 
 	end = datetime.datetime.now()
