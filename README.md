@@ -57,7 +57,8 @@ python2.7
 		- save2mongo.py : save triples to mongo
 		- save2neo4j.py : save triples from mango to neo4j
 #### test script
-'''
+
+```shell
 cd /home/jasonhaven/workspace/github/DJH-GraduationDesign/src/preprocess
 python convert2simple.py
 python convert_raw2one.py
@@ -69,4 +70,4 @@ cd ../extraction
 pyhthon ne_re
 cd ../db
 python2 save2mongo.py
-'''
+```
